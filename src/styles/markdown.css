@@ -1,0 +1,81 @@
+/* Дополнительные стили для Markdown компонента */
+
+/* Улучшенный стиль для code blocks */
+.markdown-content pre {
+  @apply relative;
+}
+
+.markdown-content pre code {
+  @apply block w-full;
+}
+
+/* Hover эффекты для ссылок */
+.markdown-content a {
+  @apply transition-colors duration-200;
+}
+
+.markdown-content a:hover {
+  @apply text-blue-700;
+}
+
+/* Стили для таблиц с лучшей читаемостью */
+.markdown-content table {
+  @apply shadow-sm;
+}
+
+.markdown-content tbody tr:nth-child(even) {
+  @apply bg-neutral-50/30;
+}
+
+.markdown-content tbody tr:hover {
+  @apply bg-neutral-50 transition-colors duration-150;
+}
+
+/* Улучшенные отступы для списков */
+.markdown-content ul li,
+.markdown-content ol li {
+  @apply leading-relaxed;
+}
+
+.markdown-content ul ul,
+.markdown-content ol ol,
+.markdown-content ul ol,
+.markdown-content ol ul {
+  @apply mt-1 mb-1;
+}
+
+/* Стили для blockquote */
+.markdown-content blockquote {
+  @apply rounded-r-md;
+}
+
+/* Highlight.js theme override для лучшей интеграции */
+.hljs {
+  background-color: rgb(23 23 23) !important;
+  color: rgb(245 245 245) !important;
+  border-radius: 0.5rem !important;
+  padding: 1rem !important;
+}
+
+/* Inline code стили */
+.markdown-content :not(pre) > code {
+  @apply break-words;
+}
+
+/* Заголовки с лучшими отступами */
+.markdown-content h1:not(:first-child),
+.markdown-content h2:not(:first-child),
+.markdown-content h3:not(:first-child),
+.markdown-content h4:not(:first-child) {
+  @apply border-t border-neutral-200 pt-4;
+}
+
+/* Адаптивные изображения */
+.markdown-content img {
+  @apply max-w-full h-auto rounded-lg shadow-sm;
+}
+
+/* Стили для горизонтальных разделителей */
+.markdown-content hr {
+  @apply my-8 border-0 border-t border-neutral-200;
+}

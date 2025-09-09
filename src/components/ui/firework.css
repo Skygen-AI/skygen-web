@@ -1,0 +1,115 @@
+/* Firework animation keyframes for 5 sticks */
+@keyframes firework-0 {
+  0% {
+    width: 0px;
+    transform: rotate(-90deg) translateY(-50%) translateX(18px);
+    opacity: 1;
+  }
+  30% {
+    width: 2px;
+    transform: rotate(-90deg) translateY(-50%) translateX(18px);
+    opacity: 1;
+  }
+  60% {
+    width: 4px;
+    transform: rotate(-90deg) translateY(-50%) translateX(18px);
+    opacity: 0.8;
+  }
+  100% {
+    width: 6px;
+    transform: rotate(-90deg) translateY(-50%) translateX(18px);
+    opacity: 0;
+  }
+}
+
+@keyframes firework-1 {
+  0% {
+    width: 0px;
+    transform: rotate(-18deg) translateY(-50%) translateX(18px);
+    opacity: 1;
+  }
+  30% {
+    width: 2px;
+    transform: rotate(-18deg) translateY(-50%) translateX(18px);
+    opacity: 1;
+  }
+  60% {
+    width: 4px;
+    transform: rotate(-18deg) translateY(-50%) translateX(18px);
+    opacity: 0.8;
+  }
+  100% {
+    width: 6px;
+    transform: rotate(-18deg) translateY(-50%) translateX(18px);
+    opacity: 0;
+  }
+}
+
+@keyframes firework-2 {
+  0% {
+    width: 0px;
+    transform: rotate(54deg) translateY(-50%) translateX(18px);
+    opacity: 1;
+  }
+  30% {
+    width: 2px;
+    transform: rotate(54deg) translateY(-50%) translateX(18px);
+    opacity: 1;
+  }
+  60% {
+    width: 4px;
+    transform: rotate(54deg) translateY(-50%) translateX(18px);
+    opacity: 0.8;
+  }
+  100% {
+    width: 6px;
+    transform: rotate(54deg) translateY(-50%) translateX(18px);
+    opacity: 0;
+  }
+}
+
+@keyframes firework-3 {
+  0% {
+    width: 0px;
+    transform: rotate(126deg) translateY(-50%) translateX(18px);
+    opacity: 1;
+  }
+  30% {
+    width: 2px;
+    transform: rotate(126deg) translateY(-50%) translateX(18px);
+    opacity: 1;
+  }
+  60% {
+    width: 4px;
+    transform: rotate(126deg) translateY(-50%) translateX(18px);
+    opacity: 0.8;
+  }
+  100% {
+    width: 6px;
+    transform: rotate(126deg) translateY(-50%) translateX(18px);
+    opacity: 0;
+  }
+}
+
+@keyframes firework-4 {
+  0% {
+    width: 0px;
+    transform: rotate(198deg) translateY(-50%) translateX(18px);
+    opacity: 1;
+  }
+  30% {
+    width: 2px;
+    transform: rotate(198deg) translateY(-50%) translateX(18px);
+    opacity: 1;
+  }
+  60% {
+    width: 4px;
+    transform: rotate(198deg) translateY(-50%) translateX(18px);
+    opacity: 0.8;
+  }
+  100% {
+    width: 6px;
+    transform: rotate(198deg) translateY(-50%) translateX(18px);
+    opacity: 0;
+  }
+}
