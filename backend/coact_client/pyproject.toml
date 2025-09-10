@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coact-client"
+version = "1.0.0"
+description = "Coact Desktop Client - Production-ready agent for task execution"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    {name = "Coact Team", email = "info@coact.dev"},
+]
+keywords = ["automation", "rpa", "desktop", "agent"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "aiohttp>=3.9.0",
+    "websockets>=12.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "pillow>=10.0.0",
+    "pyautogui>=0.9.54",
+    "psutil>=5.9.0",
+    "cryptography>=41.0.0",
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    "tenacity>=8.2.0",
+    "python-multipart>=0.0.6",
+    "platformdirs>=4.0.0",
+]
+
+[project.optional-dependencies]
+gui = [
+    "pystray>=0.19.0",
+    "pillow>=10.0.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-mock>=3.10.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.7.0",
+]
+all = [
+    "pystray>=0.19.0",
+]
+
+[project.scripts]
+coact = "coact_client.cli:main"
+coact-gui = "coact_client.gui_main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["coact_client*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+ignore_missing_imports = true
