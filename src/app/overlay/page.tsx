@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { tauriBridge } from "@/lib/tauri-bridge";
 
 declare global {
   interface Window {
@@ -17,7 +18,7 @@ declare global {
 export default function OverlayPage() {
   // Close on Escape
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleEscape = async (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         console.log("🔑 ESC pressed, hiding overlay");
         // Try Swift bridge first
@@ -25,7 +26,12 @@ export default function OverlayPage() {
           window.webkit.messageHandlers.overlay.postMessage({ action: 'hideOverlay' });
         } else {
           // Fallback to Tauri
-          import("@tauri-apps/api/core").then(({ invoke }) => invoke("hide_overlay"));
+          try {
+            await tauriBridge.invoke("hide_overlay");
+          } catch (error) {
+            // Tauri not available, ignore
+            console.warn('Tauri not available for overlay hide');
+          }
         }
       }
     };

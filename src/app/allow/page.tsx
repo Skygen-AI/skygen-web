@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { AnimatedCircularProgressBar } from '@/components/ui/animated-circular-progress-bar'
 import SpinnerIcon from '@/components/SpinnerIcon'
+import { tauriBridge } from '@/lib/tauri-bridge'
 
 interface PermissionStep {
   id: string
@@ -169,6 +170,41 @@ const getPermissionImage = (permissionId: string) => {
   return imageMap[permissionId] || '/images/audioInput-demo.png'
 }
 
+async function requestMacOSPermission(permissionId?: string): Promise<void> {
+  if (!permissionId) return;
+  
+  try {
+    console.log(`Requesting macOS permission for: ${permissionId}`);
+    
+    switch (permissionId) {
+      case 'recording':
+      case 'audioInput':
+        await tauriBridge.invoke('request_screen_recording_permission');
+        break;
+        
+      case 'accessibility':
+      case 'systemEvents':
+        await tauriBridge.invoke('request_accessibility_permission');
+        break;
+        
+      case 'screenshot':
+        // Trigger a screenshot to request permission
+        try {
+          await tauriBridge.invoke('desktop_env_screenshot');
+        } catch (error) {
+          console.log('Screenshot permission requested via attempt');
+        }
+        break;
+        
+      default:
+        console.log(`No specific permission request for: ${permissionId}`);
+        break;
+    }
+  } catch (error) {
+    console.error(`Failed to request permission for ${permissionId}:`, error);
+  }
+}
+
 export default function AllowPage() {
   const [currentStep, setCurrentStep] = useState(0)
   const [permissions, setPermissions] = useState(permissionSteps)
@@ -226,6 +262,10 @@ export default function AllowPage() {
     if (isGranting) return; // Prevent multiple clicks
     
     setIsGranting(true);
+    
+    // Request actual macOS permissions
+    const currentPermission = permissions[currentStep];
+    await requestMacOSPermission(currentPermission?.id);
     
     // Simulate permission granting process with delay
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -308,6 +348,9 @@ export default function AllowPage() {
     
     // Add to granting set
     setGrantingPermissions(prev => new Set(prev).add(permissionId));
+    
+    // Request actual macOS permissions
+    await requestMacOSPermission(permissionId);
     
     // Simulate permission granting process
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -840,7 +883,7 @@ export default function AllowPage() {
                 size="lg"
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-base rounded-lg w-full"
               >
-                <Link href="/chat">
+                <Link href="/app">
                   Continue
                 </Link>
               </Button>

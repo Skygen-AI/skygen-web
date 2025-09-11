@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+// No Tauri dependency needed for HTTP-based ChatService
 
 export interface ChatSession {
     id: string;
@@ -49,12 +49,38 @@ export interface AgentCapabilities {
 export class ChatService {
     private static instance: ChatService;
     private backendUrl: string = 'http://localhost:8000';
+    private deviceId: string;
+
+    private constructor() {
+        // Получаем или создаем device_id
+        this.deviceId = this.getOrCreateDeviceId();
+    }
 
     public static getInstance(): ChatService {
         if (!ChatService.instance) {
             ChatService.instance = new ChatService();
         }
         return ChatService.instance;
+    }
+
+    private getOrCreateDeviceId(): string {
+        const stored = localStorage.getItem('device_id');
+        if (stored) {
+            return stored;
+        }
+        
+        // Генерируем новый device_id как UUID
+        const newDeviceId = this.generateUUID();
+        localStorage.setItem('device_id', newDeviceId);
+        return newDeviceId;
+    }
+
+    private generateUUID(): string {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 
     private getAuthHeaders(): Record<string, string> {
@@ -202,7 +228,7 @@ export class ChatService {
             body: JSON.stringify({
                 message,
                 session_id: sessionId,
-                device_id: deviceId,
+                device_id: deviceId || this.deviceId,
                 metadata: {},
             }),
         });
@@ -256,3 +282,5 @@ export class ChatService {
         return response.json();
     }
 }
+
+export const chatService = ChatService.getInstance();

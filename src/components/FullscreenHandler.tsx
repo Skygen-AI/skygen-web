@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from 'react';
+import { tauriBridge } from '@/lib/tauri-bridge';
 
 export default function FullscreenHandler() {
   useEffect(() => {
@@ -12,8 +13,7 @@ export default function FullscreenHandler() {
     async function detectFullscreenState() {
       if (isTauri) {
         try {
-          const { getCurrentWindow } = await import('@tauri-apps/api/window');
-          const currentWindow = getCurrentWindow();
+          const currentWindow = await tauriBridge.getCurrentWindow();
           
           // Monitor window state changes
           const unlisten = await currentWindow.listen('tauri://resize', async () => {

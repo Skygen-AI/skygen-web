@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { tauriBridge } from '@/lib/tauri-bridge';
 
 export interface AuthResponse {
     success: boolean;
@@ -39,12 +39,16 @@ export class SkygenService {
         return SkygenService.instance;
     }
 
+    private async invokeCommand<T>(command: string, args?: any): Promise<T> {
+        return await tauriBridge.invoke(command, args);
+    }
+
     /**
      * Установка зависимостей Python
      */
     async installDependencies(): Promise<string> {
         try {
-            const result = await invoke<string>('install_dependencies');
+            const result = await this.invokeCommand<string>('install_dependencies');
             return result;
         } catch (error) {
             throw new Error(`Failed to install dependencies: ${error}`);
@@ -56,7 +60,7 @@ export class SkygenService {
      */
     async getStatus(): Promise<StatusResponse> {
         try {
-            const response = await invoke<StatusResponse>('skygen_get_status');
+            const response = await this.invokeCommand<StatusResponse>('skygen_get_status');
             return response;
         } catch (error) {
             throw new Error(`Failed to get status: ${error}`);
@@ -68,7 +72,7 @@ export class SkygenService {
      */
     async signup(email: string, password: string): Promise<any> {
         try {
-            const response = await invoke<AuthResponse>('skygen_signup', {
+            const response = await this.invokeCommand<AuthResponse>('skygen_signup', {
                 email,
                 password,
             });
@@ -91,7 +95,7 @@ export class SkygenService {
      */
     async login(email: string, password: string): Promise<LoginData> {
         try {
-            const response = await invoke<AuthResponse>('skygen_login', {
+            const response = await this.invokeCommand<AuthResponse>('skygen_login', {
                 email,
                 password,
             });
@@ -120,7 +124,7 @@ export class SkygenService {
      */
     async enrollDevice(): Promise<DeviceData> {
         try {
-            const response = await invoke<AuthResponse>('skygen_enroll_device');
+            const response = await this.invokeCommand<AuthResponse>('skygen_enroll_device');
 
             if (!response.success) {
                 throw new Error(response.error || 'Device enrollment failed');
@@ -147,7 +151,7 @@ export class SkygenService {
      */
     async connect(): Promise<boolean> {
         try {
-            const response = await invoke<AuthResponse>('skygen_connect');
+            const response = await this.invokeCommand<AuthResponse>('skygen_connect');
 
             if (!response.success) {
                 throw new Error(response.error || 'Connection failed');

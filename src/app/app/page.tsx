@@ -7,7 +7,7 @@ import { Sidebar, SidebarBody, SidebarLink } from "../../components/ui/sidebar";
 import { useChat } from "../../hooks/useChat";
 import { ChatMessage, ChatConversation } from "../../types/chat";
 import { ChatMessage as ChatMessageComponent } from "../../components/ChatMessage";
-import { geminiService } from "../../services/geminiService";
+import { chatService } from "../../services/chatService";
 import { ThemeToggle } from "../../components/ThemeToggle";
 import { useTheme } from "../../contexts/ThemeContext";
 import { Component as EtheralShadow } from "../../components/ui/etheral-shadow";
@@ -112,18 +112,17 @@ export default function AppPage() {
     addTypingIndicator();
     
     try {
-      // Get message history from current conversation for context
-      const conversationHistory = activeConversation?.messages || [];
-      
-      // Call Gemini API with context
-      const response = await geminiService.sendMessageWithContext(
-        content, 
-        conversationHistory
-      );
+      // Send message to backend agent
+      const response = await chatService.chatWithAgent(content);
       
       // Remove "typing" indicator and add assistant response
       removeTypingIndicator();
-      addAssistantMessage(response);
+      addAssistantMessage(response.assistant_message.content);
+      
+      // If a task was created, show additional info
+      if (response.task_created && response.task_id) {
+        addAssistantMessage(`✅ Задача создана с ID: ${response.task_id}`);
+      }
     } catch (error) {
       console.error('Error getting AI response:', error);
       // Remove "typing" indicator and show error

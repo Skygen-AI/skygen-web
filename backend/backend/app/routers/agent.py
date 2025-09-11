@@ -28,7 +28,7 @@ class SimpleAgent:
     def should_create_task(message: str) -> bool:
         """Определяет, нужно ли создавать задачу из сообщения"""
         task_keywords = [
-            "screenshot", "скриншот", "снимок экрана",
+            "screenshot", "скриншот", "скрин", "снимок экрана",
             "click", "кликни", "нажми", "клик",
             "type", "напечатай", "введи", "набери",
             "open", "открой", "запусти",
@@ -47,7 +47,7 @@ class SimpleAgent:
         message_lower = message.lower()
 
         # Определяем тип действия
-        if any(word in message_lower for word in ["screenshot", "скриншот", "снимок"]):
+        if any(word in message_lower for word in ["screenshot", "скриншот", "скрин", "снимок"]):
             action_type = "screenshot"
             actions = [{
                 "action_id": str(uuid.uuid4()),

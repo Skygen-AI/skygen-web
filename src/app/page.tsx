@@ -318,12 +318,13 @@ const HeroHeader = () => {
                                         <span>Sign Up</span>
                                     </Link>
                                 </Button>
-                                <Button
-                                    onClick={() => setIsLoginModalOpen(true)}
-                                    size="sm"
-                                    className={cn(isScrolled && 'lg:hidden')}>
-                                    <span>Login</span>
-                                </Button>
+                                <Link href="/login">
+                                    <Button
+                                        size="sm"
+                                        className={cn(isScrolled && 'lg:hidden')}>
+                                        <span>Login</span>
+                                    </Button>
+                                </Link>
                                 <Button
                                     asChild
                                     size="sm"

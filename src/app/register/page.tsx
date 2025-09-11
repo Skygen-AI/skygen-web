@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { SignInPage } from "../../components/ui/sign-in";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Squares from "../../components/Squares";
 import { swiftBridge } from "@/lib/swift-bridge";
+import { AuthService } from "@/services/authService";
 
 const testimonials = [
   {
@@ -29,27 +30,45 @@ const testimonials = [
 ];
 
 export default function RegisterPage() {
-  const handleSignIn = (e: React.FormEvent<HTMLFormElement>) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  
+  const authService = AuthService.getInstance();
+
+  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+    
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email');
-    const password = formData.get('password');
-    const rememberMe = formData.get('rememberMe');
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
     
-    console.log('Sign up submitted:', { email, password, rememberMe });
-    
-    // Navigate to /allow page after successful registration
-    if (swiftBridge.isNativeApp()) {
-      swiftBridge.navigateTo('/allow');
-    } else {
-      // Fallback for web version
-      window.location.href = '/allow';
+    try {
+      // Регистрируемся через бэкенд API
+      const result = await authService.signupAndLogin(email, password);
+      
+      setSuccess(`Welcome ${result.user.email}! Registration successful.`);
+      
+      // Небольшая задержка перед редиректом
+      setTimeout(() => {
+        if (swiftBridge.isNativeApp()) {
+          swiftBridge.navigateTo('/skygen-setup');
+        } else {
+          window.location.href = '/skygen-setup';
+        }
+      }, 1500);
+      
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Registration failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = () => {
-    console.log('Google sign up clicked');
-    
     // Navigate to /allow page after successful Google registration
     if (swiftBridge.isNativeApp()) {
       swiftBridge.navigateTo('/allow');
@@ -60,12 +79,10 @@ export default function RegisterPage() {
   };
 
   const handleResetPassword = () => {
-    console.log('Reset password clicked');
-    alert("Reset password functionality");
+    // Reset password functionality placeholder
   };
 
   const handleCreateAccount = () => {
-    console.log('Create account clicked');
     // This would typically switch to a different mode or page
   };
 
@@ -89,15 +106,38 @@ export default function RegisterPage() {
       </Link>
       
       <div className="relative z-10">
+        {/* Error/Success Messages */}
+        {(error || success) && (
+          <div className="fixed top-6 right-6 z-50 max-w-md">
+            {error && (
+              <div className="bg-red-500/90 backdrop-blur-sm text-white p-4 rounded-lg shadow-lg border border-red-400/30">
+                <div className="flex items-center space-x-2">
+                  <span className="text-red-200">❌</span>
+                  <span>{error}</span>
+                </div>
+              </div>
+            )}
+            {success && (
+              <div className="bg-green-500/90 backdrop-blur-sm text-white p-4 rounded-lg shadow-lg border border-green-400/30">
+                <div className="flex items-center space-x-2">
+                  <span className="text-green-200">✅</span>
+                  <span>{success}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <SignInPage
           title={<span className="font-light text-white tracking-tighter">Join Skygen</span>}
-          description="Create your account and start your AI journey with us"
+          description={isLoading ? "Creating your account..." : "Create your account and start your AI journey with us"}
           heroImageSrc="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=1200&fit=crop"
           testimonials={testimonials}
           onSignIn={handleSignIn}
           onGoogleSignIn={handleGoogleSignIn}
           onResetPassword={handleResetPassword}
           onCreateAccount={handleCreateAccount}
+          disabled={isLoading}
         />
       </div>
     </div>
