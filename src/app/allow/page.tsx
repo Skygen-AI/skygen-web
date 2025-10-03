@@ -14,7 +14,7 @@ import {
   HardDrive,
   Bell,
   Settings,
-  Users
+  Users,
 } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -204,6 +204,7 @@ async function requestMacOSPermission(permissionId?: string): Promise<void> {
     console.error(`Failed to request permission for ${permissionId}:`, error);
   }
 }
+
 
 export default function AllowPage() {
   const [currentStep, setCurrentStep] = useState(0)
@@ -414,7 +415,8 @@ export default function AllowPage() {
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex items-center justify-center p-8">
+    <div className="h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
+      
       <div className="w-full max-w-7xl bg-white rounded-2xl shadow-xl overflow-hidden flex h-[800px]">
         {/* Left side - Step content */}
         <div className="flex-1 flex flex-col px-8 py-12">

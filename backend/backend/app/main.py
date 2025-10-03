@@ -8,6 +8,8 @@ from app.routers import me as me_router
 from app.routers import admin as admin_router
 from app.routers import chat as chat_router
 from app.routers import agent as agent_router
+from app.routers import screenshots as screenshots_router
+from app.routers import files as files_router
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -215,6 +217,10 @@ app.include_router(chat_router.router,
                    prefix="/v1/chat", tags=["chat"])
 app.include_router(agent_router.router,
                    prefix="/v1/agent", tags=["agent"])
+app.include_router(screenshots_router.router,
+                   prefix="/v1/screenshots", tags=["screenshots"])
+app.include_router(files_router.router,
+                   prefix="/v1/files", tags=["files"])
 
 
 @app.get("/healthz")

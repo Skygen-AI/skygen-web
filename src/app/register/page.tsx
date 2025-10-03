@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { SignInPage } from "../../components/ui/sign-in";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Squares from "../../components/Squares";
 import { swiftBridge } from "@/lib/swift-bridge";
-import { AuthService } from "@/services/authService";
+import { authService } from "@/services/authService";
 
 const testimonials = [
   {
@@ -33,8 +34,39 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const router = useRouter();
   
-  const authService = AuthService.getInstance();
+  // DEV MODE: Автоматическая регистрация и логин при загрузке страницы
+  useEffect(() => {
+    const isDev = process.env.NEXT_PUBLIC_DEV_MODE === 'true';
+    
+    if (isDev) {
+      const devEmail = process.env.NEXT_PUBLIC_DEV_USER || 'dev@skygen.local';
+      const devPassword = process.env.NEXT_PUBLIC_DEV_PASSWORD || 'dev123';
+      
+      // Автоматически регистрируем через 500мс
+      const timer = setTimeout(async () => {
+        console.log('[DEV MODE] Auto-registration enabled');
+        try {
+          await authService.signupAndLogin(devEmail, devPassword);
+          setSuccess('🔧 Dev mode: Auto-registered!');
+          
+          setTimeout(() => {
+            if (swiftBridge.isNativeApp()) {
+              swiftBridge.navigateTo('/skygen-setup');
+            } else {
+              router.push('/skygen-setup');
+            }
+          }, 1000);
+        } catch (err) {
+          console.error('[DEV MODE] Auto-registration failed:', err);
+          // В dev-режиме игнорируем ошибку и продолжаем
+        }
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [router]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -402,6 +402,7 @@ async def chat_with_agent(
                         "actions": [
                             {
                                 "action_id": str(uuid.uuid4()),
+                                "type": "screenshot",
                                 "action_type": "screenshot",
                                 "description": "Делаю скриншот экрана"
                             }
@@ -425,6 +426,26 @@ async def chat_with_agent(
                 task_created = True
                 task_id = str(task.id)
                 response_content = "📸 Делаю скриншот экрана..."
+                
+                # Ждем немного для обработки задачи и пытаемся получить screenshot URL
+                import asyncio
+                await asyncio.sleep(3)  # Даем время агенту обработать задачу
+                
+                # Проверяем результат задачи
+                await db.refresh(task)
+                if task.status == "completed" and task.result:
+                    # Извлекаем screenshot_path из результата
+                    results = task.result.get("results", [])
+                    for result in results:
+                        if result.get("action_type") == "screenshot" and result.get("result"):
+                            screenshot_path = result["result"].get("screenshot_path")
+                            if screenshot_path and screenshot_path.startswith("http"):
+                                screenshot_url = screenshot_path
+                                response_content = f"✅ Скриншот готов!\n\n![Screenshot]({screenshot_url})"
+                                break
+                    
+                    if not screenshot_url:
+                        response_content = "✅ Скриншот выполнен, но изображение недоступно"
 
         else:
             response_content = "⚠️ Для скриншота нужно подключить устройство"

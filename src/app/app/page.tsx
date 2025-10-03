@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { MessageCircle, Bot, Plus, Home, Settings, User, HelpCircle, Wind, BookOpen, BarChart3, Monitor } from "lucide-react";
+import { MessageCircle, Bot, Plus, Home, Settings, User, HelpCircle, Wind, BookOpen, BarChart3, Monitor } from "lucide-react";                                                                                          
 import { AiInput } from "../../components/ui/ai-input";
 import { Sidebar, SidebarBody, SidebarLink } from "../../components/ui/sidebar";
 import { useChat } from "../../hooks/useChat";
 import { ChatMessage, ChatConversation } from "../../types/chat";
 import { ChatMessage as ChatMessageComponent } from "../../components/ChatMessage";
+import { geminiService } from "../../services/geminiService";
 import { chatService } from "../../services/chatService";
 import { ThemeToggle } from "../../components/ThemeToggle";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -26,8 +27,8 @@ function SidebarItem(props: {
       className={
         "flex items-start gap-4 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 border " +
         (active 
-          ? "bg-neutral-100 border-neutral-300 hover:border-neutral-400 dark:bg-neutral-700 dark:border-neutral-600 dark:hover:border-neutral-500" 
-          : "bg-transparent border-transparent hover:bg-neutral-50 hover:border-neutral-200 dark:hover:bg-neutral-800 dark:hover:border-neutral-700")
+          ? "bg-neutral-100 border-neutral-300 hover:border-neutral-400 dark:bg-neutral-700 dark:border-neutral-600 dark:hover:border-neutral-500"                                                                      
+          : "bg-transparent border-transparent hover:bg-neutral-50 hover:border-neutral-200 dark:hover:bg-neutral-800 dark:hover:border-neutral-700")                                                                   
       }
       onClick={onClick}
     >
@@ -93,7 +94,7 @@ export default function AppPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [isUserAtBottom, setIsUserAtBottom] = useState<boolean>(true);
 
-  // Handle message sending
+  // Handle message sending with backend integration for screenshot commands
   const handleSendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
     
@@ -112,24 +113,50 @@ export default function AppPage() {
     addTypingIndicator();
     
     try {
-      // Send message to backend agent
-      const response = await chatService.chatWithAgent(content);
+      // Check if this is a screenshot or agent command
+      const isAgentCommand = content.toLowerCase().includes('скриншот') || 
+                            content.toLowerCase().includes('screenshot') ||
+                            content.toLowerCase().includes('открой') ||
+                            content.toLowerCase().includes('запусти');
       
-      // Remove "typing" indicator and add assistant response
-      removeTypingIndicator();
-      addAssistantMessage(response.assistant_message.content);
-      
-      // If a task was created, show additional info
-      if (response.task_created && response.task_id) {
-        addAssistantMessage(`✅ Задача создана с ID: ${response.task_id}`);
+      if (isAgentCommand) {
+        // Use chatService (will use mock in dev mode, real backend in prod)
+        const isDev = process.env.NEXT_PUBLIC_DEV_MODE === 'true';
+        
+        const result = await chatService.chatWithAgent(
+          content,
+          activeConversation?.id,
+          undefined // device_id is managed internally
+        );
+        // Remove "typing" indicator and add assistant response
+        removeTypingIndicator();
+        
+        // Add assistant message from response
+        if (result.assistant_message) {
+          addAssistantMessage(result.assistant_message.content);
+        }
+        
+        // In dev mode, show simplified message without task polling
+        // In prod mode, could implement task polling here if needed
+      } else {
+        // For other messages, use Gemini API
+        const conversationHistory = activeConversation?.messages || [];
+        const response = await geminiService.sendMessageWithContext(
+          content, 
+          conversationHistory
+        );
+        
+        // Remove "typing" indicator and add assistant response
+        removeTypingIndicator();
+        addAssistantMessage(response);
       }
     } catch (error) {
       console.error('Error getting AI response:', error);
       // Remove "typing" indicator and show error
       removeTypingIndicator();
-      addAssistantMessage('Sorry, an error occurred while contacting the AI. Please try again.');
+      addAssistantMessage(`❌ Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
     }
-  }, [activeConversation, createConversation, addUserMessage, addAssistantMessage, addTypingIndicator, removeTypingIndicator]);
+  }, [activeConversation, createConversation, addUserMessage, addAssistantMessage, addTypingIndicator, removeTypingIndicator]);                                                                                         
 
   // Data for new sidebar
   const sidebarLinks = [
@@ -216,7 +243,7 @@ export default function AppPage() {
                 link={{
                   label: "Skygen",
                   href: "#",
-                  icon: <Wind className="h-6 w-6 text-neutral-200 dark:text-neutral-200 flex-shrink-0" style={{ transform: "scaleX(-1)" }} />
+                  icon: <Wind className="h-6 w-6 text-neutral-200 dark:text-neutral-200 flex-shrink-0" style={{ transform: "scaleX(-1)" }} />                                                                           
                 }}
                 className="px-2 py-4 pointer-events-none"
               />
@@ -237,7 +264,7 @@ export default function AppPage() {
                   label: "Egor Andreevich",
                   href: "#",
                   icon: (
-                    <div className="h-10 w-10 min-h-10 min-w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-base flex-shrink-0" style={{ transform: "translateX(-3px)" }}>
+                    <div className="h-10 w-10 min-h-10 min-w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-base flex-shrink-0" style={{ transform: "translateX(-3px)" }}>                                                                              
                       <span className="leading-none">EA</span>
                     </div>
                   )
@@ -248,7 +275,7 @@ export default function AppPage() {
         </Sidebar>
 
         {/* Original Chat Sidebar */}
-        <aside className="w-64 lg:w-72 border-r border-neutral-200 bg-white rounded-tl-3xl rounded-bl-3xl dark:border-neutral-700 dark:bg-neutral-800">
+        <aside className="w-64 lg:w-72 border-r border-neutral-200 bg-white rounded-tl-3xl rounded-bl-3xl dark:border-neutral-700 dark:bg-neutral-800">                                                                 
           <div className="px-4 py-4">
             <div className="mb-4 flex items-center justify-between gap-2">
               <button 
@@ -260,10 +287,10 @@ export default function AppPage() {
               >
                 <Plus size={18} />
                 New Task
-                <span className="ml-1 rounded bg-neutral-800 px-2 py-1 dark:bg-neutral-600" style={{fontSize: '15px'}}>⌘K</span>
+                <span className="ml-1 rounded bg-neutral-800 px-2 py-1 dark:bg-neutral-600" style={{fontSize: '15px'}}>⌘K</span>                                                                                        
               </button>
             </div>
-            <div className="mb-3 text-neutral-500 dark:text-neutral-400" style={{fontSize: '16px'}}>New Chat</div>
+            <div className="mb-3 text-neutral-500 dark:text-neutral-400" style={{fontSize: '16px'}}>New Chat</div>                                                                                                      
           </div>
           <div className="space-y-2 px-3 pb-4">
             {conversations.map((conversation) => (
@@ -301,7 +328,7 @@ export default function AppPage() {
               <div 
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                  backgroundImage: `url("https://framerusercontent.com/images/g0QcWrxr87K0ufOxIUFBakwYA8.png")`,
+                  backgroundImage: `url("https://framerusercontent.com/images/g0QcWrxr87K0ufOxIUFBakwYA8.png")`,                                                                                                        
                   backgroundSize: '280px 280px',
                   backgroundRepeat: 'repeat',
                   opacity: 0.056,
@@ -314,14 +341,14 @@ export default function AppPage() {
           
           {/* Header */}
           <div className="flex items-center justify-between px-5 md:px-7 py-5 relative z-10">
-            <h1 className="truncate font-semibold text-neutral-900 dark:text-neutral-100" style={{fontSize: '28px'}}>
+            <h1 className="truncate font-semibold text-neutral-900 dark:text-neutral-100" style={{fontSize: '28px'}}>                                                                                                   
               {activeConversation?.title || 'Select a conversation'}
             </h1>
             <div className="flex items-center gap-2">
               <ThemeToggle />
               {activeConversation && activeConversation.messages.length > 0 && (
-              <div className="rounded-full bg-neutral-100 px-4 py-2 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300" style={{fontSize: '17px'}}>
-                  {activeConversation.messages.length} message{activeConversation.messages.length === 1 ? '' : 's'}
+              <div className="rounded-full bg-neutral-100 px-4 py-2 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300" style={{fontSize: '17px'}}>                                                             
+                  {activeConversation.messages.length} message{activeConversation.messages.length === 1 ? '' : 's'}                                                                                                     
               </div>
               )}
             </div>
@@ -367,8 +394,9 @@ export default function AppPage() {
                     Start a new conversation
                   </h3>
                   <p className="text-neutral-500 max-w-md dark:text-neutral-400">
-                    Ask a question or describe a task, and I&apos;ll help you
+                    Ask a question or describe a task, and I&apos;ll help you.
                   </p>
+                  
                     </div>
               )}
             </div>

@@ -107,6 +107,7 @@ const Section1: React.FC<SectionProps> = ({ scrollYProgress }) => {
                 <span>Learn More</span>
                 <BookOpen className="h-5 w-5" />
               </a>
+
             </div>
           </div>
         </main>
@@ -130,6 +131,7 @@ const Section1: React.FC<SectionProps> = ({ scrollYProgress }) => {
     </motion.section>
   );
 };
+
 
 const Section2: React.FC<SectionProps> = ({ scrollYProgress }) => {
   // Fade in faster from scroll 0.1 to 0.2 (much quicker transition)
@@ -171,6 +173,7 @@ const Section2: React.FC<SectionProps> = ({ scrollYProgress }) => {
                 <h1 style={{ fontWeight: 250 }} className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-20">
           Possibilities of Skygen
         </h1>
+        
         
         {/* Половина страницы пустого места */}
         <div className="h-[50vh]"></div>

@@ -1,0 +1,21 @@
+# Desktop Environment Dependencies
+# Core automation
+pyautogui>=0.9.54
+
+# macOS specific dependencies
+pyobjc-framework-Cocoa>=10.0  # For AppKit
+pyobjc-framework-ApplicationServices>=10.0  # For ApplicationServices
+pyobjc-framework-Quartz>=10.0  # For Quartz
+pyperclip>=1.8.2  # For clipboard operations
+
+# XML processing
+lxml>=4.9.0
+
+# Linux specific dependencies (optional)
+# python-xlib>=0.33  # For Linux X11 support
+
+# Windows specific dependencies (optional)
+# pillow>=10.0.0  # For Windows screenshot support via PIL
+
+# Cross-platform dependencies
+psutil>=5.9.0  # For system information

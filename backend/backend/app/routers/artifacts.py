@@ -222,3 +222,93 @@ async def upload_artifact(
         "s3_key": object_key,
         "size": len(file_content)
     }
+
+
+@router.get("/view/{object_key:path}")
+async def view_artifact(
+    object_key: str,
+    current_user: Annotated[User, Depends(get_current_user)]
+) -> dict:
+    """Get public URL for viewing an artifact"""
+    if settings.artifacts_bucket is None:
+        raise HTTPException(
+            status_code=500, detail="Artifacts bucket not configured")
+    
+    # Generate public URL for viewing
+    if settings.minio_external_endpoint:
+        public_url = f"{settings.minio_external_endpoint.rstrip('/')}/{settings.artifacts_bucket}/{object_key}"
+    else:
+        public_url = f"{settings.minio_endpoint.rstrip('/')}/{settings.artifacts_bucket}/{object_key}"
+    
+    return {
+        "public_url": public_url,
+        "s3_url": f"s3://{settings.artifacts_bucket}/{object_key}",
+    }
+
+
+@router.post("/upload-temp")
+async def upload_artifact_temp(
+    file: UploadFile = File(...),
+    filename: str = Form(...),
+    content_type: str = Form(...),
+) -> dict:
+    """Temporary upload endpoint without auth for testing screenshots"""
+    if settings.artifacts_bucket is None:
+        raise HTTPException(
+            status_code=500, detail="Artifacts bucket not configured")
+
+    # Use internal MinIO endpoint for upload
+    s3 = get_s3_client()
+    if s3 is None:
+        raise HTTPException(
+            status_code=500, detail="S3 client not available")
+
+    # Ensure bucket exists
+    try:
+        await run_s3_operation(partial(s3.head_bucket, Bucket=settings.artifacts_bucket))
+    except HTTPException:
+        raise  # Re-raise timeout errors
+    except Exception:
+        # Bucket doesn't exist, create it
+        try:
+            await run_s3_operation(partial(s3.create_bucket, Bucket=settings.artifacts_bucket))
+        except HTTPException:
+            raise  # Re-raise timeout errors
+        except Exception:
+            pass
+
+    # Generate object key
+    object_key = filename
+
+    # Read file content
+    file_content = await file.read()
+
+    # Upload to S3
+    try:
+        await run_s3_operation(
+            partial(
+                s3.put_object,
+                Bucket=settings.artifacts_bucket,
+                Key=object_key,
+                Body=file_content,
+                ContentType=content_type
+            )
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to upload file: {str(e)}") from e
+
+    # Generate public URL using external endpoint
+    if settings.minio_external_endpoint:
+        public_url = f"{settings.minio_external_endpoint.rstrip('/')}/{settings.artifacts_bucket}/{object_key}"
+    else:
+        public_url = f"{settings.minio_endpoint.rstrip('/')}/{settings.artifacts_bucket}/{object_key}"
+
+    return {
+        "success": True,
+        "url": public_url,
+        "s3_key": object_key,
+        "size": len(file_content)
+    }

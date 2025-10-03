@@ -15,6 +15,10 @@ export interface AuthError {
     detail: string;
 }
 
+/**
+ * Real Auth Service - подключается к реальному бэкенду
+ * Используется в продакшене или когда DEV_MODE отключен
+ */
 export class AuthService {
     private static instance: AuthService;
     private backendUrl: string = 'http://localhost:8000';
@@ -73,8 +77,10 @@ export class AuthService {
         const loginData: LoginResponse = await response.json();
 
         // Сохраняем токены в localStorage
-        localStorage.setItem('access_token', loginData.access_token);
-        localStorage.setItem('refresh_token', loginData.refresh_token);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('access_token', loginData.access_token);
+            localStorage.setItem('refresh_token', loginData.refresh_token);
+        }
 
         // Подключаемся к WebSocket с полученным токеном
         try {
@@ -92,6 +98,7 @@ export class AuthService {
      * Проверка авторизации
      */
     isAuthenticated(): boolean {
+        if (typeof window === 'undefined') return false;
         return !!localStorage.getItem('access_token');
     }
 
@@ -99,6 +106,7 @@ export class AuthService {
      * Получение токена доступа
      */
     getAccessToken(): string | null {
+        if (typeof window === 'undefined') return null;
         return localStorage.getItem('access_token');
     }
 
@@ -106,6 +114,7 @@ export class AuthService {
      * Выход из системы
      */
     logout(): void {
+        if (typeof window === 'undefined') return;
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
     }
@@ -125,4 +134,28 @@ export class AuthService {
 
         return { user, tokens };
     }
+}
+
+// ============================================
+// Conditional Export: Mock vs Real Service
+// ============================================
+// В DEV режиме используем mock-сервис (без бэкенда)
+// В PROD режиме используем реальный сервис
+// 
+// ВАЖНО: Проверка использует строгое сравнение === 'true'
+// Любое другое значение (включая undefined) = PROD режим
+import { MockAuthService } from './authService.mock';
+
+const isDev = process.env.NEXT_PUBLIC_DEV_MODE === 'true';
+
+// В dev-режиме экспортируем mock, иначе - реальный сервис
+export const authService = isDev 
+    ? MockAuthService.getInstance()
+    : AuthService.getInstance();
+
+// Логируем режим только один раз
+if (typeof window !== 'undefined') {
+    console.log(
+        `[AuthService] Mode: ${isDev ? '🔧 DEV (Mock)' : '🚀 PRODUCTION (Real Backend)'}`
+    );
 }

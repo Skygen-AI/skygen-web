@@ -10,7 +10,7 @@
     "deploy": "npm run build && npm run export",
     "export": "next export",
     "tauri": "tauri",
-    "tauri:dev": "tauri dev",
+    "tauri:dev": "TAURI_DEV=true tauri dev",
     "tauri:build": "tauri build"
   },
   "dependencies": {

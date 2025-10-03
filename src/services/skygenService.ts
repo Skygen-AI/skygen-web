@@ -107,8 +107,10 @@ export class SkygenService {
             const loginData = response.data as LoginData;
 
             // Сохраняем токены в localStorage
-            localStorage.setItem('access_token', loginData.access_token);
-            localStorage.setItem('refresh_token', loginData.refresh_token);
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('access_token', loginData.access_token);
+                localStorage.setItem('refresh_token', loginData.refresh_token);
+            }
 
             return loginData;
         } catch (error) {
@@ -133,9 +135,11 @@ export class SkygenService {
             const deviceData = response.data as DeviceData;
 
             // Сохраняем данные устройства
-            localStorage.setItem('device_id', deviceData.device_id);
-            localStorage.setItem('device_token', deviceData.device_token);
-            localStorage.setItem('wss_url', deviceData.wss_url);
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('device_id', deviceData.device_id);
+                localStorage.setItem('device_token', deviceData.device_token);
+                localStorage.setItem('wss_url', deviceData.wss_url);
+            }
 
             return deviceData;
         } catch (error) {
@@ -170,6 +174,7 @@ export class SkygenService {
      * Проверка авторизации
      */
     isAuthenticated(): boolean {
+        if (typeof window === 'undefined') return false;
         return !!localStorage.getItem('access_token');
     }
 
@@ -177,6 +182,7 @@ export class SkygenService {
      * Проверка регистрации устройства
      */
     isDeviceEnrolled(): boolean {
+        if (typeof window === 'undefined') return false;
         return !!localStorage.getItem('device_id');
     }
 
@@ -184,6 +190,7 @@ export class SkygenService {
      * Получение токена доступа
      */
     getAccessToken(): string | null {
+        if (typeof window === 'undefined') return null;
         return localStorage.getItem('access_token');
     }
 
@@ -191,6 +198,7 @@ export class SkygenService {
      * Получение ID устройства
      */
     getDeviceId(): string | null {
+        if (typeof window === 'undefined') return null;
         return localStorage.getItem('device_id');
     }
 
@@ -198,6 +206,7 @@ export class SkygenService {
      * Выход из системы
      */
     logout(): void {
+        if (typeof window === 'undefined') return;
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('device_id');

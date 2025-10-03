@@ -31,6 +31,8 @@ interface SignInPageProps {
   onGoogleSignIn?: () => void;
   onResetPassword?: () => void;
   onCreateAccount?: () => void;
+  disabled?: boolean;
+  isLoginMode?: boolean;
 }
 
 // --- SUB-COMPONENTS ---

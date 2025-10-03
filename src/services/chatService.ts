@@ -52,8 +52,8 @@ export class ChatService {
     private deviceId: string;
 
     private constructor() {
-        // Получаем или создаем device_id
-        this.deviceId = this.getOrCreateDeviceId();
+        // Получаем или создаем device_id (только на клиенте)
+        this.deviceId = typeof window !== 'undefined' ? this.getOrCreateDeviceId() : '';
     }
 
     public static getInstance(): ChatService {
@@ -64,6 +64,10 @@ export class ChatService {
     }
 
     private getOrCreateDeviceId(): string {
+        if (typeof window === 'undefined') {
+            return '';
+        }
+        
         const stored = localStorage.getItem('device_id');
         if (stored) {
             return stored;
@@ -84,6 +88,9 @@ export class ChatService {
     }
 
     private getAuthHeaders(): Record<string, string> {
+        if (typeof window === 'undefined') {
+            throw new Error('Not available during SSR');
+        }
         const token = localStorage.getItem('access_token');
         if (!token) {
             throw new Error('Not authenticated');
@@ -283,4 +290,26 @@ export class ChatService {
     }
 }
 
-export const chatService = ChatService.getInstance();
+// ============================================
+// Conditional Export: Mock vs Real Service
+// ============================================
+// В DEV режиме используем mock-сервис (без бэкенда)
+// В PROD режиме используем реальный сервис
+// 
+// ВАЖНО: Проверка использует строгое сравнение === 'true'
+// Любое другое значение (включая undefined) = PROD режим
+import { MockChatService } from './chatService.mock';
+
+const isDev = process.env.NEXT_PUBLIC_DEV_MODE === 'true';
+
+// В dev-режиме экспортируем mock, иначе - реальный сервис
+export const chatService = isDev
+    ? MockChatService.getInstance()
+    : ChatService.getInstance();
+
+// Логируем режим только один раз
+if (typeof window !== 'undefined') {
+    console.log(
+        `[ChatService] Mode: ${isDev ? '🔧 DEV (Mock)' : '🚀 PRODUCTION (Real Backend)'}`
+    );
+}
